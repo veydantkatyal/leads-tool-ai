@@ -30,6 +30,8 @@ def prepare_data(input_csv):
         df['category_list'].fillna('')
     )
     df['intent'] = df['text_features'].apply(detect_intent)
+
+    df.to_csv('data/leads_intent.csv', index=False)
     return df
 
 def train_intent_model(df, max_features=200):
@@ -41,10 +43,13 @@ def train_intent_model(df, max_features=200):
     tfidf = TfidfVectorizer(max_features=max_features, ngram_range=(1,2))
     X_train_tfidf = tfidf.fit_transform(X_train)
     X_test_tfidf = tfidf.transform(X_test)
+
+    from imblearn.over_sampling import SMOTE
     smote = SMOTE(random_state=42)
     X_train_bal, y_train_bal = smote.fit_resample(X_train_tfidf, y_train)
-    clf = LogisticRegression(max_iter=200, random_state=42)
-    clf.fit(X_train_bal, y_train_bal)
+
+    clf = LogisticRegression(max_iter=200, random_state=42, class_weight='balanced')
+    clf.fit(X_train_tfidf, y_train)
     return clf, tfidf, X_test_tfidf, y_test
 
 def evaluate_model(clf, X_test_tfidf, y_test):

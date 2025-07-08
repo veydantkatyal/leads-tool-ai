@@ -6,6 +6,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 class SimilarityRecommender:
     def __init__(self, data_csv, tfidf_path):
         self.df = pd.read_csv(data_csv, dtype=str, low_memory=False)
+        if 'name' in self.df.columns:
+            self.df['name'] = self.df['name'].str.replace('/organization/', '', regex=False)
         self.tfidf = joblib.load(tfidf_path)
         self._prepare_matrix()
 
@@ -26,7 +28,7 @@ class SimilarityRecommender:
         sims = cosine_similarity([self.tfidf_matrix[idx]], self.tfidf_matrix)[0]
         top_indices = np.argsort(sims)[::-1][1:top_n+1]
         similar_companies = self.df.iloc[top_indices].copy()
-        display_cols = [col for col in ['name', 'market', 'category_list', 'city', 'country_code'] if col in self.df.columns]
+        display_cols = [col for col in ['name', 'market', 'city', 'country_code'] if col in self.df.columns]
         return similar_companies[display_cols].reset_index(drop=True)
 
 if __name__ == '__main__':

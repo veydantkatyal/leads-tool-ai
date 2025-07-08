@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.impute import SimpleImputer
 import matplotlib.pyplot as plt
 
 class MarketSegmentation:
@@ -14,13 +15,15 @@ class MarketSegmentation:
     def _prepare_matrix(self):
         if any(col.startswith('tfidf_') for col in self.df.columns):
             tfidf_features = [col for col in self.df.columns if col.startswith('tfidf_')]
-            self.tfidf_matrix = self.df[tfidf_features].values.astype(float)
+            tfidf_matrix = self.df[tfidf_features].values
         else:
-            self.tfidf_matrix = self.tfidf.transform(self.df['text_features'].astype(str)).toarray()
-        self.tfidf_matrix = np.nan_to_num(self.tfidf_matrix, nan=0.0)
+            tfidf_matrix = self.tfidf.transform(self.df['text_features'].astype(str)).toarray()
+        imputer = SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=0)
+        tfidf_matrix_imputed = imputer.fit_transform(tfidf_matrix)
+        self.tfidf_matrix = np.asarray(tfidf_matrix_imputed, dtype=np.float64)
 
-    def cluster(self, n_clusters=8):
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    def cluster(self, n_clusters=10):
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
         self.df['cluster'] = kmeans.fit_predict(self.tfidf_matrix)
         self.kmeans = kmeans
         return self.df[['cluster', 'name', 'market']]
@@ -40,5 +43,5 @@ if __name__ == '__main__':
     data_csv = 'data/leads_recommender.csv'
     tfidf_path = 'models/lead_tfidf.pkl'
     segmenter = MarketSegmentation(data_csv, tfidf_path)
-    print(segmenter.cluster(n_clusters=8).head())
+    print(segmenter.cluster(n_clusters=10).head())
     segmenter.plot_pca() 

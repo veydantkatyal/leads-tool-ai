@@ -53,7 +53,10 @@ def extract_features(df, max_tfidf_features=100):
     for col in X.columns:
         if col not in cat_features:
             X[col] = pd.to_numeric(X[col], errors='coerce').fillna(0)
-    ohe = OneHotEncoder(handle_unknown='ignore', sparse=False)
+    try:
+        ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+    except TypeError:
+        ohe = OneHotEncoder(handle_unknown='ignore', sparse=False)
     X_cat = ohe.fit_transform(X[cat_features])
     X_num = X.drop(columns=cat_features).astype(float).values
     X_all = np.hstack([X_cat, X_num, tfidf_df.values])
@@ -64,8 +67,8 @@ def train_model(X_all, y):
         X_all, y, test_size=0.2, random_state=42, stratify=y
     )
     model = XGBClassifier(
-        n_estimators=200,
-        max_depth=7,
+        n_estimators=500,  
+        max_depth=15,      
         learning_rate=0.05,
         use_label_encoder=False,
         eval_metric='logloss',
@@ -119,7 +122,7 @@ def save_artifacts(model, ohe, tfidf, X, tfidf_df, y):
     tfidf_features = pd.DataFrame(tfidf_df.values, columns=tfidf_feature_names)
     preprocessed_df = pd.concat([X.reset_index(drop=True), tfidf_features], axis=1)
     preprocessed_df['converted'] = y.values
-    preprocessed_df.to_csv('data/leads_preprocessed_full.csv', index=False)
+    preprocessed_df.to_csv('data/lead_scoring.csv', index=False)
     print("Artifacts and preprocessed dataset saved.")
 
 def example_inference(model, ohe, tfidf, X, tfidf_df):
@@ -139,8 +142,7 @@ def main():
     tfidf_features = pd.DataFrame(tfidf_df.values, columns=tfidf_feature_names)
     preprocessed_df = pd.concat([X.reset_index(drop=True), tfidf_features], axis=1)
     preprocessed_df['converted'] = y.values
-    preprocessed_df.to_csv('data/leads_preprocessed_full.csv', index=False)
-    print("Preprocessed dataset with TF-IDF features saved as data/leads_preprocessed_full.csv")
+    preprocessed_df.to_csv('data/lead_scoring.csv', index=False)
     model, X_train, X_test, y_train, y_test = train_model(X_all, y)
     evaluate_model(model, X_test, y_test, X, tfidf_df)
     save_artifacts(model, ohe, tfidf, X, tfidf_df, y)
