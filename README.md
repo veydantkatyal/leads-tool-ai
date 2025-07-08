@@ -2,6 +2,10 @@
 
 SaaSquatch-AI-Leads is a modular, production-ready, AI-powered lead generation and analysis tool built with Streamlit. It leverages Crunchbase startup data and advanced machine learning to help SaaS businesses and sales teams discover, score, and segment high-potential leads.
 
+## Dataset
+
+- **Access the dataset:** [Download Crunchbase Startup Dataset (Kaggle)](https://www.kaggle.com/datasets/arindam235/startup-investments-crunchbase/data)
+
 ## Table of Contents
 
 - [Features](#features)
@@ -12,7 +16,6 @@ SaaSquatch-AI-Leads is a modular, production-ready, AI-powered lead generation a
 - [Model Training & Updating](#model-training--updating)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
-- [Acknowledgments](#acknowledgments)
 
 ## Features
 
@@ -21,18 +24,30 @@ SaaSquatch-AI-Leads is a modular, production-ready, AI-powered lead generation a
 - Uses a LightGBM/XGBoost model trained on a synthetic target (`converted = funding_total_usd > 1,000,000`).
 - Outputs a lead score (0–100) for each company and displays ranked results.
 
+![Lead Scoring UI](assets/1.png)
+
+
 ### 2. Company Similarity Recommender
 - Recommends the top 5 most similar companies for any selected company.
 - Uses TF-IDF or Sentence Transformers on company descriptions and categories.
 - Computes cosine similarity for recommendations.
 
-### 3. Intent Signal Prediction
-- Detects buying signals in company descriptions using a synthetic label (intent = 1 if description contains keywords like "hiring", "launch", "AI", "funding").
-- Trains a BERT-based or TF-IDF + Logistic Regression model to classify intent.
+![Similarity Recommender UI](assets/2.png)
 
-### 4. Smart Clustering for Segmentation
+
+### 3. Smart Clustering for Segmentation
 - Clusters leads into segments using KMeans on TF-IDF features.
 - Displays cluster label, company name, industry, and visualizes clusters with PCA.
+
+![Clustering UI](assets/3-a.png)
+![Clustering UI](assets/3-b.png)
+
+
+### 4. Intent Signal Prediction
+- Detects buying signals in company descriptions using a synthetic label (intent = 1 if description contains keywords like "hiring", "launch", "AI", "funding").
+- Trains TF-IDF + Logistic Regression model to classify intent.
+![Intent Signal UI](assets/4.png)
+
 
 ## Project Structure
 
@@ -117,9 +132,4 @@ leads-tool-ai/
 
 ## License
 
-This project is licensed under the MIT License.
-
-## Acknowledgments
-
-- Crunchbase for the startup dataset
-- scikit-learn, XGBoost, and Streamlit for the core technology stack 
+This project is licensed under the [MIT License](https://github.com/veydantkatyal/leads-tool-ai/blob/main/LICENSE).
